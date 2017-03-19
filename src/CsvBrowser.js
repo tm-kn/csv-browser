@@ -56,10 +56,10 @@ class CsvBrowser extends React.Component {
     this.sortArray = this.sortArray.bind(this);
   }
 
-  async componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps, prevState) {
     // Sorting changed
     if (
-      this.state.sortBy.columnId
+      this.state.sortBy.columnId !== undefined
       && this.state.sortBy.ascending !== undefined &&
       this.state.sortBy !== prevState.sortBy
     ) {
@@ -67,7 +67,7 @@ class CsvBrowser extends React.Component {
     }
 
     // Searching changed
-    if (this.state.search && this.state.search !== prevState.search) {
+    if (this.state.search !== undefined && this.state.search !== prevState.search) {
       this.searchArray();
     }
 
@@ -267,7 +267,7 @@ class CsvBrowser extends React.Component {
                           {this.state.sortBy.columnId === i ? `${this.state.sortBy.ascending ? 'ASC' : 'DESC'}` : 'Sort'}
                         </button>
                         <button
-                          disabled={this.state.groupBy}
+                          disabled={this.state.groupBy !== undefined}
                           onClick={() => this.handleGroupByColumn(i)}
                         >
                           {this.state.groupBy !== i ? 'Group'  : 'GROUPPING BY'}
@@ -360,10 +360,9 @@ class CsvBrowser extends React.Component {
   }
 
   sortArray() {
-    const logEntriesCopy = this.state.processedLogEntries.slice();
-
     const compareValues = (val, val2) => {
       const index = this.state.sortBy.columnId;
+
       if (!val[index] && !val2[index]) {
         return 0;
       } else if (!val[index] && val2[index]) {
@@ -391,11 +390,9 @@ class CsvBrowser extends React.Component {
       }
     };
 
-    logEntriesCopy.sort(compareValues);
-
-    this.setState(() => ({
+    this.setState(state => ({
       processedLogEntries: [
-        ...logEntriesCopy
+        ...state.processedLogEntries.slice().sort(compareValues)
       ],
       loading: false
     }));
@@ -532,57 +529,62 @@ class CsvBrowser extends React.Component {
   }
 
   groupArray() {
-    return new Promise(resolve => {
-      const newArray = [];
-      const index = this.state.groupBy;
-      const uniqueValuesSet = new Set();
+    const newArray = [];
+    const index = this.state.groupBy;
+    const uniqueValuesSet = new Set();
 
-      for (let rowKey in this.state.processedLogEntries) {
-        uniqueValuesSet.add(this.state.processedLogEntries[rowKey][index]);
-      }
+    // Find unique entries in the group by column
+    for (let rowKey in this.state.processedLogEntries) {
+      uniqueValuesSet.add(this.state.processedLogEntries[rowKey][index]);
+    }
 
-      for (let uniqueKey of uniqueValuesSet) {
-        const internalArray = [];
-        internalArray[index] = uniqueKey;
-        newArray.push(internalArray);
-      }
+    // Create empty array with empty unique keys
+    for (let uniqueKey of uniqueValuesSet) {
+      const internalArray = [];
+      internalArray[index] = uniqueKey;
+      newArray.push(internalArray);
+    }
 
-      this.setState(() => ({
-        loading: false,
-        processedLogEntries: [
-          ...newArray.map((value, newArayIndex, array) => {
-            const internalArray = [];
-            
-            let count = 1;
-            // Go throught all the log entries
-            for (let logEntryKey in this.state.processedLogEntries) {
-              // Match log entry with the same GROUP BY index
-              if (this.state.processedLogEntries[logEntryKey][index] === value[index]) {
-                // Go through keys
-                for (let logEntryColumnKey in this.state.processedLogEntries[logEntryKey]) {
-                  if (parseInt(logEntryColumnKey, 10) === index) {
-                    internalArray[logEntryColumnKey] = `${this.state.processedLogEntries[logEntryKey][logEntryColumnKey]} - COUNT(${count})`;
-                    count++;
-                  } else {
-                    if (!internalArray[logEntryColumnKey]) {
-                      internalArray[logEntryColumnKey] = this.state.processedLogEntries[logEntryKey][logEntryColumnKey];
-                    } else if (internalArray[logEntryColumnKey] instanceof Set) {
-                      internalArray[logEntryColumnKey].add(this.state.processedLogEntries[logEntryKey][logEntryColumnKey]);
-                    } else if (internalArray[logEntryColumnKey] !== this.state.processedLogEntries[logEntryKey][logEntryColumnKey]) {
-                      internalArray[logEntryColumnKey] = new Set([internalArray[logEntryColumnKey]]);
-                    }
-                  } 
-                }
+    this.setState(() => ({
+      loading: false,
+      processedLogEntries: [
+        ...newArray.map((value, newArayIndex, array) => {
+          const internalArray = [];
+          
+          let count = 1;
+          // Go throught all the log entries
+          for (let logEntryKey in this.state.processedLogEntries) {
+            // Match log entry with the same GROUP BY index
+            if (this.state.processedLogEntries[logEntryKey][index] === value[index]) {
+              // Go through keys
+              for (let logEntryColumnKey in this.state.processedLogEntries[logEntryKey]) {
+                // If it's the key that we group by...
+                if (parseInt(logEntryColumnKey, 10) === index) {
+                  internalArray[logEntryColumnKey] = `${this.state.processedLogEntries[logEntryKey][logEntryColumnKey]} - COUNT(${count})`;
+                  count++;
+                // Other keys
+                } else {
+                  // No values in this column - assign the first value
+                  if (!internalArray[logEntryColumnKey]) {
+                    internalArray[logEntryColumnKey] = this.state.processedLogEntries[logEntryKey][logEntryColumnKey];
+
+                  // If it's a set of values, add it to the set - won't duplicate anyway
+                  } else if (internalArray[logEntryColumnKey] instanceof Set) {
+                    internalArray[logEntryColumnKey].add(this.state.processedLogEntries[logEntryKey][logEntryColumnKey]);
+                  
+                  // If the value insice the log entry is not the same, create a set to store all the different values
+                  } else if (internalArray[logEntryColumnKey] !== this.state.processedLogEntries[logEntryKey][logEntryColumnKey]) {
+                    internalArray[logEntryColumnKey] = new Set([internalArray[logEntryColumnKey]]);
+                  }
+                } 
               }
             }
+          }
 
-            return internalArray; 
-          })
-        ]
-      }));
-
-      resolve();
-    });   
+          return internalArray; 
+        })
+      ]
+    }));
   }
 }
 
