@@ -7,6 +7,7 @@ class CsvBrowser extends React.Component {
   get offsetValues() {
     return [15, 30, 60, 90];
   }
+
   get numberOfColumns() {
     const entries = this.getEntriesForPage(this.state.page);
 
@@ -14,7 +15,9 @@ class CsvBrowser extends React.Component {
   }
 
   get numberOfPages() {
-    return Math.ceil(this.numberOfRecords / this.state.offset);
+    const numberOfPages = Math.ceil(this.numberOfRecords / this.state.offset);
+
+    return numberOfPages || 1;
   }
 
   get numberOfRecords() {
@@ -35,10 +38,12 @@ class CsvBrowser extends React.Component {
       page: 1,
       search: '',
       processedLogEntries: [],
-      sortBy: {}
+      sortBy: {},
+      groupBy: undefined
     };
 
     this.handleGoToPage = this.handleGoToPage.bind(this);
+    this.handeGroupByColumn = this.handleGroupByColumn.bind(this);
     this.handleSortByColumn = this.handleSortByColumn.bind(this);
     this.handleSubmitPageNumber = this.handleSubmitPageNumber.bind(this);
     this.handleSubmitFile = this.handleSubmitFile.bind(this);
@@ -51,7 +56,7 @@ class CsvBrowser extends React.Component {
     this.sortArray = this.sortArray.bind(this);
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  async componentDidUpdate(prevProps, prevState) {
     // Sorting changed
     if (
       this.state.sortBy.columnId
@@ -66,15 +71,21 @@ class CsvBrowser extends React.Component {
       this.searchArray();
     }
 
-    // Change current
+    // Change current file
     if (this.state.file && this.state.file !== prevState.file) {
       this.loadCSVFile();
+    }
+
+    // Change grouping
+    if (this.state.groupBy !== undefined && this.state.groupBy !== prevState.groupBy) {
+      this.groupArray();
     }
   }
 
   async loadCSVFile() {
     this.setState(state => ({
       error: undefined,
+      groupBy: undefined,
       loading: true,
       page: 1,
       sortBy: {}
@@ -128,8 +139,8 @@ class CsvBrowser extends React.Component {
     if (this.state.loading) {
       content = (
         <div>
-          <img src={logo} className="App-logo" alt="Loading CSV file..." />
-          <p>Loading CSV file...</p>
+          <img src={logo} className="App-logo" alt="Loading..." />
+          <p>Loading...</p>
         </div>
       );
     } else if (!this.state.file) {
@@ -253,7 +264,13 @@ class CsvBrowser extends React.Component {
                         <button
                           onClick={() => this.handleSortByColumn(i)}
                         >
-                          {this.state.sortBy.columnId === i ? `${i} ${this.state.sortBy.ascending ? 'ASC' : 'DESC'}` : i}
+                          {this.state.sortBy.columnId === i ? `${this.state.sortBy.ascending ? 'ASC' : 'DESC'}` : 'Sort'}
+                        </button>
+                        <button
+                          disabled={this.state.groupBy}
+                          onClick={() => this.handleGroupByColumn(i)}
+                        >
+                          {this.state.groupBy !== i ? 'Group'  : 'GROUPPING BY'}
                         </button>
                       </th>
                     );
@@ -268,7 +285,29 @@ class CsvBrowser extends React.Component {
                 return (
                   <tr key={key}>
                     {item.map((subitem, subkey) => (
-                      <td key={`${key}_${subkey}`}>{subitem}</td>
+                      <td key={`${key}_${subkey}`}>
+                        {(() => {
+                          if (subitem instanceof Set) {
+                            let joinedSet = '';
+
+                            for (let item of subitem) {
+                              joinedSet += `${item}\n`;
+                            }
+
+                            return (
+                              <button
+                                onClick={() => {
+                                  alert(joinedSet);
+                                }}
+                              >
+                                {subitem.size} different values
+                              </button>
+                            );
+                          }
+
+                          return subitem;
+                        })()}
+                      </td>
                     ))}
                   </tr>
                 );
@@ -331,6 +370,16 @@ class CsvBrowser extends React.Component {
         return -1;
       } else if (val[index] && !val2[index]) {
         return 1;
+      } else if (val[index] instanceof Set) {
+        if (val2[index] instanceof Set) {
+          if (this.state.sortBy.ascending) {
+            return val[index].size > val2[index].size;
+          } else {
+            return val[index].size < val2[index].size;
+          }
+        }
+
+        return 0;
       }
 
       const comparison = val[index].localeCompare(val2[index]);
@@ -347,24 +396,28 @@ class CsvBrowser extends React.Component {
     this.setState(() => ({
       processedLogEntries: [
         ...logEntriesCopy
-      ]
+      ],
+      loading: false
     }));
   }
 
   searchArray() {
-    this.setState(() => ({
-      loading: true,
-      page: 1
-    }));
-
     const pattern = new RegExp(this.state.search, 'i');
 
     this.setState(state => ({
       loading: false,
       processedLogEntries: state.processedLogEntries.filter(row => {
         for (let column of row) {
-          if (column.search(pattern) !== -1) {
+          if (
+            !(column instanceof Set) && column.search(pattern) !== -1
+          ) {
             return true;
+          } else if (column instanceof Set) {
+            for (let rowColumn of column) {
+              if (rowColumn.search(pattern) !== -1) {
+                return true;
+              }
+            }
           }
         }
 
@@ -379,7 +432,8 @@ class CsvBrowser extends React.Component {
         ...state.sortBy,
         columnId,
         ascending: state.sortBy.ascending ? !state.sortBy.ascending : true
-      }
+      },
+      loading: true
     }));
   }
 
@@ -389,6 +443,7 @@ class CsvBrowser extends React.Component {
 
   handleResetFilters() {
     this.setState(state => ({
+      groupBy: undefined,
       processedLogEntries: [...state.logEntries],
       sortBy: {},
       search: '',
@@ -462,9 +517,72 @@ class CsvBrowser extends React.Component {
     event.preventDefault();
 
     this.setState(state => ({
+      loading: true,
+      page: 1,
       changingSearch: '',
       search: state.changingSearch
     }));
+  }
+
+  handleGroupByColumn(columnId) {
+    this.setState(state => ({
+      groupBy: columnId,
+      loading: true
+    }));
+  }
+
+  groupArray() {
+    return new Promise(resolve => {
+      const newArray = [];
+      const index = this.state.groupBy;
+      const uniqueValuesSet = new Set();
+
+      for (let rowKey in this.state.processedLogEntries) {
+        uniqueValuesSet.add(this.state.processedLogEntries[rowKey][index]);
+      }
+
+      for (let uniqueKey of uniqueValuesSet) {
+        const internalArray = [];
+        internalArray[index] = uniqueKey;
+        newArray.push(internalArray);
+      }
+
+      this.setState(() => ({
+        loading: false,
+        processedLogEntries: [
+          ...newArray.map((value, newArayIndex, array) => {
+            const internalArray = [];
+            
+            let count = 1;
+            // Go throught all the log entries
+            for (let logEntryKey in this.state.processedLogEntries) {
+              // Match log entry with the same GROUP BY index
+              if (this.state.processedLogEntries[logEntryKey][index] === value[index]) {
+                // Go through keys
+                for (let logEntryColumnKey in this.state.processedLogEntries[logEntryKey]) {
+                  if (parseInt(logEntryColumnKey, 10) === index) {
+                    internalArray[logEntryColumnKey] = `${this.state.processedLogEntries[logEntryKey][logEntryColumnKey]} - COUNT(${count})`;
+                    count++;
+                  } else {
+                    if (!internalArray[logEntryColumnKey]) {
+                      internalArray[logEntryColumnKey] = this.state.processedLogEntries[logEntryKey][logEntryColumnKey];
+                    } else if (internalArray[logEntryColumnKey] instanceof Set) {
+                      internalArray[logEntryColumnKey].add(this.state.processedLogEntries[logEntryKey][logEntryColumnKey]);
+                    } else if (internalArray[logEntryColumnKey] !== this.state.processedLogEntries[logEntryKey][logEntryColumnKey]) {
+                      internalArray[logEntryColumnKey] = new Set([internalArray[logEntryColumnKey]]);
+                    }
+                  } 
+                }
+              }
+            }
+
+            return internalArray; 
+          })
+        ]
+      }));
+
+      resolve();
+    });   
   }
 }
 
