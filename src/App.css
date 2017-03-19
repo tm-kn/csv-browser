@@ -18,7 +18,47 @@
   font-size: large;
 }
 
+ul {
+  list-style-type: none;
+}
+
+ul.horizontal > li {
+  display: inline;
+}
+
+div.tableContainer { 
+  overflow-x: auto;
+  width: 100%;
+}
+
+table {
+  border: 1px solid #000;
+  border-collapse: collapse;
+}
+
+tr, td, th {
+  padding: 10px;
+  border: 1px solid #000;
+  vertical-align: center;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+footer {
+  margin-top: 100px;
+}
+
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+.controlsContainer {
+  padding: 50px;
+}
+
+.button {
+  margin: 6px;
 }
