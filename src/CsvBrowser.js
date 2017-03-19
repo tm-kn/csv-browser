@@ -26,7 +26,7 @@ class CsvBrowser extends React.Component {
       error: undefined,
       logEntries: [],
       offset: 30,
-      page: 1,
+      page: 10368,
       sortBy: {}
     };
 
@@ -80,18 +80,24 @@ class CsvBrowser extends React.Component {
   }
 
   getEntriesForPage(pageNumber) {
-    const startIndex = ((pageNumber - 1) * (this.state.offset + 1));
+    let startIndex = ((pageNumber - 1) * (this.state.offset));
     let endIndex = startIndex + this.state.offset;
+
+    if (startIndex !== 0) {
+      startIndex += 1;
+    }
 
     if (endIndex > this.numberOfRecords - 1) {
       endIndex = this.numberOfRecords - 1;
     }
-
+    console.log(`start index: ${startIndex}, end index: ${endIndex}`);
     const result = this.state.logEntries.slice(startIndex, endIndex);
     return result;
   }
     
   render() {
+    let firstButton;
+    let lastButton;
     let prevButton;
     let nextButton;
     let logEntriesList = (
@@ -113,6 +119,14 @@ class CsvBrowser extends React.Component {
         </div>
       );
     } else if (this.state.logEntries.length) {
+      firstButton = (
+        <button disabled={this.state.page === 1} onClick={() => this.handleGoToPage(1)}>First page</button>
+      );
+
+      lastButton = (
+        <button disabled={this.state.page === this.numberOfPages} onClick={() => this.handleGoToPage(this.numberOfPages)}>Last page</button>
+      );
+
       prevButton = (
         <button disabled={!this.previousPageExists()} onClick={this.handlePreviousPage}>Previous page</button>
       );
@@ -123,8 +137,10 @@ class CsvBrowser extends React.Component {
 
       const summary = (
         <div>
+          {firstButton}
           {prevButton}
           {nextButton}
+          {lastButton}
           <div>
             <button onClick={() => this.handleResetSorting()}>
               Reset sorting
@@ -211,8 +227,6 @@ class CsvBrowser extends React.Component {
       newPage = page;
     }
 
-    console.log(newPage);
-
     this.setState(() => ({
       page: newPage
     }));
@@ -268,8 +282,10 @@ class CsvBrowser extends React.Component {
   }
 
   changeOffsetTo(offset) {
-    this.setState(() => ({
-      offset
+
+    this.setState(state => ({
+      offset,
+      page: Math.ceil(state.page / (state.offset/offset))
     }));
   }
 
