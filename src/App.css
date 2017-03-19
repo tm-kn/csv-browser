@@ -2,16 +2,15 @@
   text-align: center;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 4s linear;
-  height: 80px;
-}
-
 .App-header {
   background-color: #222;
-  height: 50px;
-  padding: 20px;
+  height: 25px;
+  padding: 8px;
   color: white;
+}
+
+.App-header h2 {
+  margin: 0;
 }
 
 .App-intro {
@@ -48,11 +47,6 @@ tr:nth-child(even) {
 
 footer {
   margin-top: 100px;
-}
-
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 .controlsContainer {

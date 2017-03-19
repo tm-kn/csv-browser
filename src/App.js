@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import './App.css';
 
-import CsvBrowser from './CsvBrowser';
+import { CsvBrowser } from './views';
 
-class App extends Component {
+export default class App extends Component {
   render() {
     return (
       <div className="App">
@@ -13,13 +13,22 @@ class App extends Component {
         <CsvBrowser />
         <footer>
           <ul>
-            <li>Tomasz Knapik</li>
-            <li><a href="mailto:u1562595@unimail.hud.ac.uk">u1562595@unimail.hud.ac.uk</a></li>
+            <li>
+              Tomasz Knapik
+            </li>
+            <li>
+              <a href="mailto:u1562595@unimail.hud.ac.uk">
+                u1562595@unimail.hud.ac.uk
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/tm-kn/csv-browser">
+                GitHub
+              </a>
+            </li>
           </ul>
         </footer>
       </div>
     );
   }
 }
-
-export default App;
