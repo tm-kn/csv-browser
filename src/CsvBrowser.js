@@ -139,7 +139,7 @@ class CsvBrowser extends React.Component {
           <p>Select the CSV file you want to open.</p>
           <form onSubmit={this.handleSubmitFile}>
             <input type="file" onChange={this.handleChangeFile} name="csvFile" accept="text/csv, .csv" />
-            <input className="button" type="submit" value="Load to the browser" />
+            <input disabled={!this.state.changingFile} className="button" type="submit" value="Load to the browser" />
           </form>
         </div>
       );
@@ -406,6 +406,11 @@ class CsvBrowser extends React.Component {
 
   handleSubmitFile(event) {
     event.preventDefault();
+
+    if (!this.state.changingFile) {
+      alert('Please choose a file first');
+      return;
+    }
 
     this.setState(state => ({
       file: state.changingFile,
