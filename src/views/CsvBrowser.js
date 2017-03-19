@@ -400,7 +400,8 @@ export default class CsvBrowser extends Component {
           
           return internalArray; 
         })
-      ]
+      ],
+      page: 1
     }));
   }
 }
