@@ -182,7 +182,9 @@ export default class CsvBrowser extends Component {
                         <button
                           onClick={() => this.handleSortByColumn(i)}
                         >
-                          {this.state.sortBy.columnId === i ? `${this.state.sortBy.ascending ? 'ASC' : 'DESC'}` : 'Sort'}
+                          {this.state.sortBy.columnId === i ?
+                            `${this.state.sortBy.ascending ?'ASC':'DESC'}`
+                            : 'Sort'}
                         </button>
                         <button
                           disabled={this.state.groupBy !== undefined}
@@ -238,6 +240,7 @@ export default class CsvBrowser extends Component {
       content = (
         <div>
           {controls}
+          <p>If your browser freezes, wait until it unfreezes... It is most likely analysing the data!</p>
           <div className="tableContainer">
             {table}
           </div>
@@ -377,7 +380,8 @@ export default class CsvBrowser extends Component {
               for (let logEntryColumnKey in this.state.processedLogEntries[logEntryKey]) {
                 // If it's the key that we group by...
                 if (parseInt(logEntryColumnKey, 10) === index) {
-                  internalArray[logEntryColumnKey] = `${this.state.processedLogEntries[logEntryKey][logEntryColumnKey]} - COUNT(${count})`;
+                  internalArray[logEntryColumnKey] = `${this.state.processedLogEntries[logEntryKey][logEntryColumnKey]}`
+                                                      + ` - COUNT(${count})`;
                   count++;
                 // Other keys
                 } else {
@@ -387,10 +391,14 @@ export default class CsvBrowser extends Component {
 
                   // If it's a set of values, add it to the set - won't duplicate anyway
                   } else if (internalArray[logEntryColumnKey] instanceof Set) {
-                    internalArray[logEntryColumnKey].add(this.state.processedLogEntries[logEntryKey][logEntryColumnKey]);
+                    internalArray[logEntryColumnKey].add(
+                      this.state.processedLogEntries[logEntryKey][logEntryColumnKey]
+                    );
                   
                   // If the value insice the log entry is not the same, create a set to store all the different values
-                  } else if (internalArray[logEntryColumnKey] !== this.state.processedLogEntries[logEntryKey][logEntryColumnKey]) {
+                  } else if (
+                    internalArray[logEntryColumnKey] !== this.state.processedLogEntries[logEntryKey][logEntryColumnKey]
+                  ) {
                     internalArray[logEntryColumnKey] = new Set([internalArray[logEntryColumnKey]]);
                   }
                 } 
