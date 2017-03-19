@@ -157,7 +157,6 @@ class CsvBrowser extends React.Component {
             <button className="button" onClick={() => this.loadCSVFile()}>
               Reload file
             </button>
-            <button className="button" onClick={this.handleResetFilters}>Reset filter/sort</button>
             <button className="button" onClick={() => this.setState(() => ({ file: undefined, logEntries: [] }))}>
               Unload file
             </button>
@@ -198,35 +197,38 @@ class CsvBrowser extends React.Component {
             </ul>
           </div>
           <div>
+            <button className="button" onClick={this.handleResetFilters}>Reset filter/sort</button>
             {(() => {
               if (this.state.search) {
                 return (
                   <p>Searching by: {this.state.search}</p>
                 );
               }
+
+              return (
+                <form onSubmit={this.handleSearchSubmit}>
+                  <input
+                    type="text"
+                    name="search"
+                    placeholder="Search..."
+                    onChange={(event) => {
+                      const target = event.target;
+
+                      this.setState(() => ({
+                        changingSearch: target.value
+                      }));
+                    }}
+                    value={this.state.changingSearch}
+                  />
+                  <input
+                    type="submit"
+                    className="button"
+                    name="submitSearch"
+                    value="Search"
+                  />
+                </form>
+              );
             })()}
-
-            <form onSubmit={this.handleSearchSubmit}>
-              <input
-                type="text"
-                name="search"
-                placeholder="Search..."
-                onChange={(event) => {
-                  const target = event.target;
-
-                  this.setState(() => ({
-                    changingSearch: target.value
-                  }));
-                }}
-                value={this.state.changingSearch}
-              />
-              <input
-                type="submit"
-                className="button"
-                name="submitSearch"
-                value="Search"
-              />
-            </form>
           </div>
         </div>
       );
@@ -389,7 +391,8 @@ class CsvBrowser extends React.Component {
     this.setState(state => ({
       processedLogEntries: [...state.logEntries],
       sortBy: {},
-      search: ''
+      search: '',
+      page: 1
     }));    
   }
 
