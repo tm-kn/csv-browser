@@ -6,6 +6,7 @@ import {
   SearchBox,
   Pager
 } from '../components';
+import { CSVArrayController } from '../utils';
 import { loadAndParseCsvFile } from '../utils/file';
 
 export default class CsvBrowser extends Component {
@@ -35,6 +36,7 @@ export default class CsvBrowser extends Component {
       groupBy: undefined
     };
 
+    this.handleSearch = this.handleSearch.bind(this);
     this.handeGroupByColumn = this.handleGroupByColumn.bind(this);
     this.handleSortByColumn = this.handleSortByColumn.bind(this);
     this.handleResetFilters = this.handleResetFilters.bind(this);
@@ -152,11 +154,7 @@ export default class CsvBrowser extends Component {
           <div>
             <button className="button" onClick={this.handleResetFilters}>Reset filter/sort</button>
             <SearchBox
-              onChange={searchString => this.setState(state => ({
-                loading: true,
-                page: 1,
-                search: searchString
-              }))}
+              onChange={this.handleSearch}
               value={this.state.search}
             />
           </div>
@@ -258,159 +256,110 @@ export default class CsvBrowser extends Component {
   }
 
   sortArray() {
-    const compareValues = (val, val2) => {
-      const index = this.state.sortBy.columnId;
-
-      if (!val[index] && !val2[index]) {
-        return 0;
-      } else if (!val[index] && val2[index]) {
-        return -1;
-      } else if (val[index] && !val2[index]) {
-        return 1;
-      } else if (val[index] instanceof Set) {
-        if (val2[index] instanceof Set) {
-          if (this.state.sortBy.ascending) {
-            return val[index].size > val2[index].size;
-          } else {
-            return val[index].size < val2[index].size;
-          }
-        }
-
-        return 0;
-      }
-
-      const comparison = val[index].localeCompare(val2[index]);
-
-      if (this.state.sortBy.ascending) {
-        return comparison;
-      } else {
-        return comparison * -1;
-      }
-    };
-
+    const arrayUtility = new CSVArrayController(this.state.processedLogEntries);
+    const sortedArray = arrayUtility.sortByColumn(
+      this.state.sortBy.columnId,
+      this.state.sortBy.ascending
+    );
+    
     this.setState(state => ({
-      processedLogEntries: [
-        ...state.processedLogEntries.slice().sort(compareValues)
-      ],
+      processedLogEntries: sortedArray
+    }));
+
+    this.setState(() => ({
       loading: false
     }));
   }
 
   searchArray() {
-    const pattern = new RegExp(this.state.search, 'i');
+    const arrayUtility = new CSVArrayController(this.state.processedLogEntries);
+    const searchedArray = arrayUtility.searchAllColumnsByString(this.state.search);
+
 
     this.setState(state => ({
-      loading: false,
-      processedLogEntries: state.processedLogEntries.filter(row => {
-        for (let column of row) {
-          if (
-            !(column instanceof Set) && column.search(pattern) !== -1
-          ) {
-            return true;
-          } else if (column instanceof Set) {
-            for (let rowColumn of column) {
-              if (rowColumn.search(pattern) !== -1) {
-                return true;
-              }
-            }
-          }
-        }
-
-        return false;
-      })
+      processedLogEntries: searchedArray
     }));
+
+    this.setState({
+      loading: false
+    });
   }
 
   handleSortByColumn(columnId) {
-    this.setState(state => ({
-      sortBy: {
-        ...state.sortBy,
-        columnId,
-        ascending: state.sortBy.ascending ? !state.sortBy.ascending : true
-      },
+    this.setState(() => ({
       loading: true
     }));
+
+    // Set timeout so the browser does not look like it hung
+    setTimeout(() => {
+      this.setState(state => ({
+        sortBy: {
+          ...state.sortBy,
+          columnId,
+          ascending: state.sortBy.ascending ? !state.sortBy.ascending : true
+        }
+      }));
+    }, 100);
+    
   }
 
   handleResetFilters() {
-    this.setState(state => ({
-      groupBy: undefined,
-      processedLogEntries: [...state.logEntries],
-      sortBy: {},
-      search: '',
-      page: 1
-    }));    
+    this.setState(() => ({
+      loading: true
+    }));
+
+    // Use timeout to minimise feeling of a lag
+    setTimeout(() => {
+      this.setState(state => ({
+        groupBy: undefined,
+        loading: false,
+        processedLogEntries: [...state.logEntries],
+        sortBy: {},
+        search: '',
+        page: 1
+      }));    
+    }, 100);
+
+  }
+
+  handleSearch(searchString) {
+    this.setState({
+      loading: true
+    });
+    
+    // Use timeout to minimise feeling of a lag
+    setTimeout(() => {
+      this.setState(state => ({
+        page: 1,
+        search: searchString
+      }));
+    }, 100);
   }
 
   handleGroupByColumn(columnId) {
-    this.setState(state => ({
-      groupBy: columnId,
+    this.setState(() => ({
       loading: true
     }));
+    
+    // Set timeout so the browser does not look like it froze
+    setTimeout(() => {
+      this.setState(state => ({
+        groupBy: columnId
+      }));
+    }, 100);
   }
 
   groupArray() {
-    const newArray = [];
-    const index = this.state.groupBy;
-    const uniqueValuesSet = new Set();
-
-    // Find unique entries in the group by column
-    for (let rowKey in this.state.processedLogEntries) {
-      uniqueValuesSet.add(this.state.processedLogEntries[rowKey][index]);
-    }
-
-    // Create empty array with empty unique keys
-    for (let uniqueKey of uniqueValuesSet) {
-      const internalArray = [];
-      internalArray[index] = uniqueKey;
-      newArray.push(internalArray);
-    }
+    const arrayUtility = new CSVArrayController(this.state.processedLogEntries);
+    const groupedArray = arrayUtility.groupByColumn(this.state.groupBy);
 
     this.setState(() => ({
-      loading: false,
-      processedLogEntries: [
-        ...newArray.map((value, newArayIndex, array) => {
-          const internalArray = [];
-          
-          let count = 1;
-          // Go throught all the log entries
-          for (let logEntryKey in this.state.processedLogEntries) {
-            // Match log entry with the same GROUP BY index
-            if (this.state.processedLogEntries[logEntryKey][index] === value[index]) {
-              // Go through keys
-              for (let logEntryColumnKey in this.state.processedLogEntries[logEntryKey]) {
-                // If it's the key that we group by...
-                if (parseInt(logEntryColumnKey, 10) === index) {
-                  internalArray[logEntryColumnKey] = `${this.state.processedLogEntries[logEntryKey][logEntryColumnKey]}`
-                                                      + ` - COUNT(${count})`;
-                  count++;
-                // Other keys
-                } else {
-                  // No values in this column - assign the first value
-                  if (!internalArray[logEntryColumnKey]) {
-                    internalArray[logEntryColumnKey] = this.state.processedLogEntries[logEntryKey][logEntryColumnKey];
-
-                  // If it's a set of values, add it to the set - won't duplicate anyway
-                  } else if (internalArray[logEntryColumnKey] instanceof Set) {
-                    internalArray[logEntryColumnKey].add(
-                      this.state.processedLogEntries[logEntryKey][logEntryColumnKey]
-                    );
-                  
-                  // If the value insice the log entry is not the same, create a set to store all the different values
-                  } else if (
-                    internalArray[logEntryColumnKey] !== this.state.processedLogEntries[logEntryKey][logEntryColumnKey]
-                  ) {
-                    internalArray[logEntryColumnKey] = new Set([internalArray[logEntryColumnKey]]);
-                  }
-                } 
-              }
-            }
-          }
-          
-          return internalArray; 
-        })
-      ],
+      processedLogEntries: groupedArray,
       page: 1
     }));
+
+    this.setState({
+      loading: false
+    });
   }
 }
