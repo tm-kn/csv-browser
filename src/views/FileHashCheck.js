@@ -61,7 +61,13 @@ export default class FileHashCheck extends Component {
           {Object.keys(this.state.fileHash).map(key => (
             <li key={key}>
               <span className={this.isValidWithUserHash(this.state.fileHash[key]) ? 'match' : 'no-match'}>
-                {key}: {this.state.fileHash[key]}
+                {`${key}: ${this.state.fileHash[key]} `}
+                <a
+                  href={'data:text/plain;charset=utf-8,' + encodeURIComponent(this.state.fileHash[key])}
+                  download={this.state.file.name + '.' + key}
+                >
+                  [Dowload]
+                </a>
               </span>
             </li>
           ))}
