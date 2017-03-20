@@ -117,7 +117,7 @@ export default class FileHashCheck extends Component {
   }
 
   isValidWithUserHash(fileHash) {
-    const pattern = new RegExp('^\\s*' + fileHash + '\\s*$', 'm');
+    const pattern = new RegExp('^\\s*' + fileHash + '\\s*$', 'mi');
 
     if (this.state.userHashes.search(pattern) !== -1) {
       return true;
