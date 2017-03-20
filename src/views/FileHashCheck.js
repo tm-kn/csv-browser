@@ -34,11 +34,29 @@ export default class FileHashCheck extends Component {
 
     return (
       <div>
-        <FileChooser
-          onChangeFile={file => this.setState(() => ({ file }))}
-        />
+        {(() => {
+          if (!this.state.file) {
+            return (
+               <FileChooser
+                onChangeFile={file => this.setState(() => ({ file }))}
+              />
+            );
+          }
+        })()}
         {this.state.error && (<p>Error: {this.state.error}</p>)}
         {this.state.file && (<h1>File: {this.state.file.name}</h1>)}
+        {(() => {
+          if (this.state.file) {
+            return (
+              <button
+                className="button"
+                onClick={() => this.setState(() => ({ error: '', file: undefined, userHashes: '', fileHash: {} }))}
+              >
+                Unload file
+              </button>
+            );
+          }
+        })()}
         <ul>
           {Object.keys(this.state.fileHash).map(key => (
             <li key={key}>
