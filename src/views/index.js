@@ -1,5 +1,9 @@
 import CsvBrowser from './CsvBrowser';
+import FileHashCheck from './FileHashCheck';
+import Home from './Home';
 
 export {
-    CsvBrowser
+    CsvBrowser,
+    FileHashCheck,
+    Home
 };

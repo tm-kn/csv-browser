@@ -2,6 +2,7 @@ import React, { Component, PropTypes } from 'react';
 
 export default class FileChooser extends Component {
   static propTypes = {
+    accept: PropTypes.string,
     onChangeFile: PropTypes.func.isRequired
   };
 
@@ -20,10 +21,10 @@ export default class FileChooser extends Component {
     return (
       <div>
         <h1>Select file</h1>
-        <p>Select the CSV file you want to open.</p>
+        <p>Select the file you want to open.</p>
         <form onSubmit={this.handleSubmitFile}>
           <input
-            accept="text/csv, .csv"
+            accept={this.props.accept}
             name="csvFile"
             onChange={this.handleChangeFile}
             type="file"

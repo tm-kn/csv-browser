@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 
-import { loadAndParseCsvFile } from '../utils/csv';
 import {
   FileChooser,
   LoadingIndicator,
   SearchBox,
   Pager
 } from '../components';
+import { loadAndParseCsvFile } from '../utils/file';
 
 export default class CsvBrowser extends Component {
   get numberOfColumns() {
@@ -120,6 +120,7 @@ export default class CsvBrowser extends Component {
     } else if (!this.state.file) {
       content = (
         <FileChooser
+          accept="text/csv, .csv"
           onChangeFile={file => this.setState(() => ({ file }))}
         />
       );

@@ -1,0 +1,58 @@
+import Baby from 'babyparse';
+
+import CryptoJS from 'crypto-js';
+
+export function getFileHashes(file, onComplete, onError) {
+  const reader = new FileReader();
+
+  reader.onerror = (err) => {
+    onError(err);
+  };
+
+  reader.onload = (result) => {
+    const data = event.target.result;
+    const wordArray = CryptoJS.lib.WordArray.create(data);
+
+    onComplete({
+      MD5: CryptoJS.MD5(wordArray).toString(),
+      SHA1: CryptoJS.SHA1(wordArray).toString(),
+      SHA256: CryptoJS.SHA256(wordArray).toString(),
+      SHA224: CryptoJS.SHA224(wordArray).toString(),
+      SHA512: CryptoJS.SHA512(wordArray).toString(),
+      SHA384: CryptoJS.SHA384(wordArray).toString(),
+      SHA3: CryptoJS.SHA3(wordArray).toString(),
+      RIPEMD160: CryptoJS.RIPEMD160(wordArray).toString(),
+    });
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+export function loadAndParseCsvFile(file, handleComplete, handleError) {
+  const reader = new FileReader();
+
+  reader.onerror = (err) => {
+    handleError(err);
+  };
+
+  reader.onload = (event) => {
+    const csvText = event.target.result;
+
+    Baby.parse(csvText, {
+      skipEmptyLines: true,
+      worker: true,
+      complete: result => {
+        if (handleComplete) {
+          handleComplete(result.data);
+        }
+      },
+      error: err => {
+        if (handleError) {
+          handleError(err);
+        }
+      }
+    });
+  };
+
+  reader.readAsText(file);
+}
