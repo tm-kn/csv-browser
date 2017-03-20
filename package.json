@@ -5,6 +5,7 @@
   "dependencies": {
     "babyparse": "^0.4.6",
     "crypto-js": "^3.1.9-1",
+    "jsdoc": "^3.4.3",
     "react": "^15.4.2",
     "react-dom": "^15.4.2"
   },
@@ -15,6 +16,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "docs": "jsdoc -d docs -p package.json -r src"
   }
 }

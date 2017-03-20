@@ -94,6 +94,9 @@ export default class FileHashCheck extends Component {
     );
   }
 
+  /**
+   * The file loading operation
+   */
   loadFile() {
     this.setState(() => ({
       loading: true
@@ -116,6 +119,11 @@ export default class FileHashCheck extends Component {
     getFileHashes(this.state.file, handleComplete, handleError);
   }
 
+  /**
+   * Compares the supplied hash with the user's multiline input of hashes (one hash per line).
+   * @param {string} fileHash 
+   * @returns {boolean}
+   */
   isValidWithUserHash(fileHash) {
     const pattern = new RegExp('^\\s*' + fileHash + '\\s*$', 'mi');
 

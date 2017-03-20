@@ -10,12 +10,22 @@ import { CSVArrayController } from '../utils';
 import { loadAndParseCsvFile } from '../utils/file';
 
 export default class CsvBrowser extends Component {
+  /**
+   * Number of columns that will be used to generate the table header.
+   * 
+   * @description It might not reflect all the columns where number
+   * of rows is different.
+   */
   get numberOfColumns() {
     const entries = this.getEntriesForPage(this.state.page);
 
     return entries.length ? entries[0].length : 0;
   }
 
+  /**
+   * Number of records currently present in the processed
+   * (e.g. sorted, grouped, etc.) array, not the raw array.
+   */
   get numberOfRecords() {
     return this.state.processedLogEntries.length;
   }
@@ -43,7 +53,7 @@ export default class CsvBrowser extends Component {
     this.loadCSVFile = this.loadCSVFile.bind(this);
     this.sortArray = this.sortArray.bind(this);
   }
-  
+
   componentDidUpdate(prevProps, prevState) {
     // Sorting changed
     if (
@@ -59,17 +69,20 @@ export default class CsvBrowser extends Component {
       this.searchArray();
     }
 
-    // Change current file
+    // File changed
     if (this.state.file && this.state.file !== prevState.file) {
       this.loadCSVFile();
     }
 
-    // Change grouping
+    // Column used to group records changed
     if (this.state.groupBy !== undefined && this.state.groupBy !== prevState.groupBy) {
       this.groupArray();
     }
   }
 
+  /**
+   * Load CSV file to the view.
+   */
   loadCSVFile() {
     this.setState(state => ({
       error: undefined,
@@ -93,10 +106,14 @@ export default class CsvBrowser extends Component {
         loading: false
       }));
     };
-    
+
     loadAndParseCsvFile(this.state.file, onComplete, onError);
   }
 
+  /**
+   * Get log entries for the particular page
+   * @param {number} pageNumber Page that we want entries for 
+   */
   getEntriesForPage(pageNumber) {
     let startIndex = ((pageNumber - 1) * (this.state.offset));
     let endIndex = startIndex + this.state.offset;
@@ -105,20 +122,26 @@ export default class CsvBrowser extends Component {
       startIndex += 1;
     }
 
+    // If supposde index is greater than the last entry in the array,
+    // use the last entry instead
     if (endIndex > this.numberOfRecords) {
       endIndex = this.numberOfRecords;
     }
+
     const result = this.state.processedLogEntries.slice(startIndex, endIndex);
     return result;
   }
-    
+
   render() {
     let content;
 
+    // Loading state
     if (this.state.loading) {
       content = (
         <LoadingIndicator />
       );
+    
+    // File upload state
     } else if (!this.state.file) {
       content = (
         <FileChooser
@@ -126,6 +149,8 @@ export default class CsvBrowser extends Component {
           onChangeFile={file => this.setState(() => ({ file }))}
         />
       );
+    
+    // Error state
     } else if (this.state.error) {
       content = (
         <div>
@@ -133,6 +158,8 @@ export default class CsvBrowser extends Component {
           <p>{this.state.error}</p>
         </div>
       );
+
+    // CSV browser view - CSV file loaded
     } else {
       const controls = (
         <div className="controlsContainer">
@@ -182,14 +209,14 @@ export default class CsvBrowser extends Component {
                           onClick={() => this.handleSortByColumn(i)}
                         >
                           {this.state.sortBy.columnId === i ?
-                            `${this.state.sortBy.ascending ?'ASC':'DESC'}`
+                            `${this.state.sortBy.ascending ? 'ASC' : 'DESC'}`
                             : 'Sort'}
                         </button>
                         <button
                           disabled={this.state.groupBy !== undefined}
                           onClick={() => this.handleGroupByColumn(i)}
                         >
-                          {this.state.groupBy !== i ? 'Group'  : 'GROUPPING BY'}
+                          {this.state.groupBy !== i ? 'Group' : 'GROUPPING BY'}
                         </button>
                       </th>
                     );
@@ -239,7 +266,11 @@ export default class CsvBrowser extends Component {
       content = (
         <div>
           {controls}
-          <p>If your browser freezes, wait until it unfreezes... It is most likely analysing the data!</p>
+          <p>
+            {'If your browser freezes, wait until it unfreezes... '}
+            {'It will unfreeze after the operation has been completed. '}
+            {'Grouping by columns with a lot of unique keys may take ages.'}
+          </p>
           <div className="tableContainer">
             {table}
           </div>
@@ -251,40 +282,14 @@ export default class CsvBrowser extends Component {
     return (
       <div>
         {content}
-      </div>  
+      </div>
     );
   }
 
-  sortArray() {
-    const arrayUtility = new CSVArrayController(this.state.processedLogEntries);
-    const sortedArray = arrayUtility.sortByColumn(
-      this.state.sortBy.columnId,
-      this.state.sortBy.ascending
-    );
-    
-    this.setState(state => ({
-      processedLogEntries: sortedArray
-    }));
-
-    this.setState(() => ({
-      loading: false
-    }));
-  }
-
-  searchArray() {
-    const arrayUtility = new CSVArrayController(this.state.processedLogEntries);
-    const searchedArray = arrayUtility.searchAllColumnsByString(this.state.search);
-
-
-    this.setState(state => ({
-      processedLogEntries: searchedArray
-    }));
-
-    this.setState({
-      loading: false
-    });
-  }
-
+  /**
+   * Event handler for sort by column CTA.
+   * @param {number} columnId Column index array will be sorted by
+   */
   handleSortByColumn(columnId) {
     this.setState(() => ({
       loading: true
@@ -300,9 +305,13 @@ export default class CsvBrowser extends Component {
         }
       }));
     }, 100);
-    
+
   }
 
+  /**
+   * Event handler for reseting all filters (e.g. search, sort, group, etc.)
+   * and bringing the original array to the view.
+   */
   handleResetFilters() {
     this.setState(() => ({
       loading: true
@@ -313,20 +322,24 @@ export default class CsvBrowser extends Component {
       this.setState(state => ({
         groupBy: undefined,
         loading: false,
-        processedLogEntries: [...state.logEntries],
+        processedLogEntries: state.logEntries,
         sortBy: {},
         search: '',
         page: 1
-      }));    
+      }));
     }, 100);
 
   }
 
+  /**
+   * Event handler for initiating search operation.
+   * @param {string} searchString String that will be used to search array with
+   */
   handleSearch(searchString) {
     this.setState({
       loading: true
     });
-    
+
     // Use timeout to minimise feeling of a lag
     setTimeout(() => {
       this.setState(state => ({
@@ -335,12 +348,16 @@ export default class CsvBrowser extends Component {
       }));
     }, 100);
   }
-
+  
+  /**
+   * Event handler for initiating group by column operation.
+   * @param {number} columnId Column index that the array will be grouped by
+   */
   handleGroupByColumn(columnId) {
     this.setState(() => ({
       loading: true
     }));
-    
+
     // Set timeout so the browser does not look like it froze
     setTimeout(() => {
       this.setState(state => ({
@@ -349,6 +366,9 @@ export default class CsvBrowser extends Component {
     }, 100);
   }
 
+  /**
+   * Group the array operation.
+   */
   groupArray() {
     const arrayUtility = new CSVArrayController(this.state.processedLogEntries);
     const groupedArray = arrayUtility.groupByColumn(this.state.groupBy);
@@ -356,6 +376,42 @@ export default class CsvBrowser extends Component {
     this.setState(() => ({
       processedLogEntries: groupedArray,
       page: 1
+    }));
+
+    this.setState({
+      loading: false
+    });
+  }
+  
+  /**
+   * Sort the array operation.
+   */
+  sortArray() {
+    const arrayUtility = new CSVArrayController(this.state.processedLogEntries);
+    const sortedArray = arrayUtility.sortByColumn(
+      this.state.sortBy.columnId,
+      this.state.sortBy.ascending
+    );
+
+    this.setState(state => ({
+      processedLogEntries: sortedArray
+    }));
+
+    this.setState(() => ({
+      loading: false
+    }));
+  }
+
+  /**
+   * Serach the array operation.
+   */
+  searchArray() {
+    const arrayUtility = new CSVArrayController(this.state.processedLogEntries);
+    const searchedArray = arrayUtility.searchAllColumnsByString(this.state.search);
+
+
+    this.setState(state => ({
+      processedLogEntries: searchedArray
     }));
 
     this.setState({

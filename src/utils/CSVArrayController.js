@@ -1,52 +1,102 @@
+/* Class used to perform operations on array that has a CSV file loaded to it. */
 export default class CSVArrayController {
+  /**
+   * Create new instance for the particular array.
+   * @param {array} array Array with CSV entries in.
+   */
   constructor(array) {
     this.array = array;
   }
 
+  /**
+   * Sort CSV array by values of a particular column.
+   * @param {number} columnId Column index that array will be sorted by.
+   * @param {boolean} asc If true array will be sorted by ascending order,
+   *                      otherwise descending order will be used.
+   * @returns {array} Sorted array.
+   */
   sortByColumn(columnId, asc = true) {
+
+    /**
+     * Comparison function sort Array.prototype.sort().
+     * @param {*} val Value 1
+     * @param {*} val2 Value 2
+     * @returns {number}
+     */
     const compareValues = (val, val2) => {
-      if (!val[columnId] && !val2[columnId]) {
+      // Test for undefined values
+      if (val[columnId] === undefined && val2[columnId] === undefined) {
         return 0;
-      } else if (!val[columnId] && val2[columnId]) {
-        return -1;
-      } else if (val[columnId] && !val2[columnId]) {
-        return 1;
-      } else if (val[columnId] instanceof Set) {
-        if (val2[columnId] instanceof Set) {
+      } else if (val[columnId] !== undefined && val2[columnId] === undefined) {
+        return asc ? 1 : 0;
+      } else if (val[columnId] !== undefined && val2[columnId] === undefined) {
+        return asc ? 0 : 1;
+
+      // If value is a set, order it by size
+      } else if (val[columnId] instanceof Set || val2[columnId] instanceof Set) {
+        // If both values are sets, sort by size...
+        if (val[columnId] instanceof Set && val2[columnId] instanceof Set) {
           if (asc) {
-            return val[columnId].size > val2[columnId].size;
+            return val[columnId].size - val2[columnId].size;
           } else {
-            return val[columnId].size < val2[columnId].size;
+            return val2[columnId].size - val[columnId].size;
           }
+        
+        // Otherwise sets come first
+        } else if (val[columnId] instanceof Set && !(val2[columnId] instanceof Set)) {
+          return asc ? 1 : -1;
+        } else {
+          return asc ? -1 : 1;
         }
 
-        return 0;
+      // If both of the values are numbers
+      } else if (!isNaN(Number(val[columnId])) && !isNaN(Number(val2[columnId]))) {
+        if (asc) {
+          return Number(val[columnId]) - Number(val2[columnId]);
+        } else {
+          return Number(val2[columnId] - val[columnId]);
+        }
+      // If the value is a string.
+      } else if (typeof val[columnId] === 'string' || typeof val2[columnId] === 'string') {
+        if (typeof val[columnId] === 'string' && typeof val2[columnId] === 'string') {
+          if (asc) {
+            return val[columnId].localeCompare(val2[columnId]);
+          } else {
+            return val2[columnId].localeCompare(val[columnId]);
+          }
+        } else if (typeof val[columnId] === 'string' && typeof val2[columnId] !== 'string') {
+          return asc ? 1 : -1;
+        } else {
+          return asc ? -1 : 1;
+        }
       }
 
-      const comparison = val[columnId].localeCompare(val2[columnId]);
-
-      if (asc) {
-        return comparison;
-      } else {
-        return comparison * -1;
-      }
+      return 0;
     };
 
+    // Clone the array first, then sort.
     return this.array.slice().sort(compareValues);
   }
 
+  /**
+   * Search all the columns by the string provided.
+   * @param {string} searchString
+   * @returns {array} Array with entries that match the search string.
+   */
   searchAllColumnsByString(searchString) {
+    // TODO: Make sure that injecting string from user into regex is secure
     const pattern = new RegExp(searchString, 'i');
 
     return this.array.filter(row => {
       for (let column of row) {
-        if (
-          !(column instanceof Set) && column.search(pattern) !== -1
-        ) {
+        // If string, just compare it with regex
+        if (typeof column === 'string' && column.search(pattern) !== -1) {
           return true;
+        
+        // If set, go through all the entries in the set
         } else if (column instanceof Set) {
           for (let rowColumn of column) {
-            if (rowColumn.search(pattern) !== -1) {
+            if (typeof rowColumn === 'string' && rowColumn.search(pattern) !== -1) {
               return true;
             }
           }
@@ -57,6 +107,14 @@ export default class CSVArrayController {
     });
   }
 
+  /**
+   * Group the array by the value of column, something like GROUP BY in SQL.
+   * @description Merges the row into one for the values that are the same in
+   *              specified column, something like GROUP BY in SQL. It is very
+   *              expensive when the column contains a lot of unique values.
+   * @param {number} columnId Column array will be sorted by.
+   * @returns {array} Grouped array
+   */
   groupByColumn(columnId) {
     const newArray = [];
     const uniqueValuesSet = new Set();

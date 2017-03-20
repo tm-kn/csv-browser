@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import './App.css';
 
 import { CsvBrowser, FileHashCheck, Home } from './views';
+import './App.css';
 
 const CSV_BROWSER = 'CSV_BROWSER';
 const FILE_HASH_CHECK = 'FILE_HASH_CHECK';
@@ -49,6 +49,9 @@ export default class App extends Component {
     );
   }
 
+  /**
+   * Dummy function that outputs view based on "route" in the state.
+   */
   renderCurrentRoute() {
     if (!this.state.route) {
       return (
