@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 
-import { FileChooser, LoadingIndicator } from '../components';
-import { getFileHashes } from '../utils/file';
-import './File-hash-check.css';
+import { FileChooser, LoadingIndicator } from 'components';
+import { getFileHashes } from 'utils/file';
+import './FileHashCheck.css';
 
 export default class FileHashCheck extends Component {
   constructor() {

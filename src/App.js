@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import { CsvBrowser, FileHashCheck, Home } from './views';
+import { CsvBrowser, FileHashCheck, Home } from 'views';
 import './App.css';
 
 const CSV_BROWSER = 'CSV_BROWSER';
