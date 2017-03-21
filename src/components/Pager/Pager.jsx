@@ -55,7 +55,7 @@ export default function render() {
         />
       </form>
       <div>
-        <p>Records found: {this.props.numberOfRecords}</p>
+        <p>Records found: {this.props.array.length}</p>
         <ul className="horizontal">
           <li>
             <span>Display:</span>
