@@ -123,22 +123,7 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         include: paths.appSrc,
-        loader: 'babel',
-        query: {
-          plugins: [
-           ["module-resolver", {
-              "root": [
-                "./src/"
-              ],
-              "alias": {
-                "components": "./src/components",
-                "utils": "./src/utils",
-                "views": "./src/views"
-              }
-            }]
-          ],
-          presets: ['es2015', 'react-app']
-        }
+        loader: 'babel'
       },
       // The notation here is somewhat confusing.
       // "postcss" loader applies autoprefixer to our CSS.

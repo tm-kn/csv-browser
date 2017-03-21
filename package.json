@@ -54,7 +54,7 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
-    "test": "node scripts/test.js --env=jsdom",
+    "test": "node scripts/test.js --no-cache --env=jsdom",
     "docs": "jsdoc -d docs -p package.json -r src"
   },
   "jest": {
@@ -84,6 +84,18 @@
   "babel": {
     "presets": [
       "react-app"
+    ],
+    "plugins": [
+      ["module-resolver", {
+        "root": [
+          "./src"
+          ],
+        "alias": {
+          "components": "./src/components",
+          "utils": "./src/utils",
+          "views": "./src/views"
+        }
+      }]
     ]
   },
   "eslintConfig": {
