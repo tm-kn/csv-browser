@@ -1,8 +1,8 @@
 # CSV Browser
 Simple React app I made as a part of my coursework. It loads a CSV file supplied by user and lets them browse it. Has functionality to search, sort and group by a column. Naturally it implements paging.
 
-## Why React?
-The choice of tool (React) is crazy since it is meant to be working with large CSV files and sometimes makes user wait a bit long, but that is just a silly experiment of mine.
+## Why web browser app?
+The choice of environment is crazy since it is meant to be working with large CSV files and sometimes makes user wait a bit long, but that is just a silly experiment of mine.
 
 ## Installation
 I run project using Node v6 on Linux. NPM or Yarn is required to run the project.
