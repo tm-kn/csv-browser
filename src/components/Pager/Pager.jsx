@@ -29,7 +29,7 @@ export default function render() {
       </button>
       <button
         className="button"
-        disabled={this.state.page === this.numberOfPages}
+        disabled={this.props.page === this.numberOfPages}
         onClick={() => this.handleGoToPage(this.numberOfPages)}
       >
         Last page

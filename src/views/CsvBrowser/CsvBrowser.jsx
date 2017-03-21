@@ -3,8 +3,8 @@ import React from 'react';
 import {
   FileChooser,
   LoadingIndicator,
+  Pager,
   SearchBox,
-  Pager
 } from 'components';
 
 export default function() {
@@ -52,6 +52,7 @@ export default function() {
           onChangeOffset={offset => this.setState(() => ({ offset }))}
           offset={this.state.offset}
           page={this.state.page}
+          ref={pager => this.pager = pager}
         />
         <div>
           <button className="button" onClick={this.handleResetFilters}>Reset filter/sort</button>
@@ -102,7 +103,7 @@ export default function() {
             </tr>
           </thead>
           <tbody>
-            {this.getEntriesForPage(this.state.page).map((item, key) => {
+            {this.state.currentPageEntries.map((item, key) => {
               return (
                 <tr key={key}>
                   {item.map((subitem, subkey) => (

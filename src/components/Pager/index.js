@@ -60,9 +60,41 @@ export default class Pager extends Component {
     this.handleGoToPage(this.props.page + 1);
   }
 
+  getCurrentPageFirstIndex() {
+    return this.getFirstIndexForPage(this.props.page, this.props.offset);
+  }
+
+  getCurrentPageLastIndex() {
+    return this.getLastIndexForPage(this.props.page, this.props.offset);
+  }
+
+  getFirstIndexForPage(page, offset) {
+    return (page - 1) * offset;
+  }
+
+  getLastIndexForPage(page, offset) {
+    return this.getFirstIndexForPage(page, offset) + offset;
+  }
+
+  getPageEntriesFromArray(array) {
+    let startIndex = this.getCurrentPageFirstIndex();
+    let endIndex = this.getCurrentPageLastIndex();
+
+    if (startIndex !== 0) {
+      startIndex += 1;
+    }
+
+    // If supposde index is greater than the last entry in the array,
+    // use the last entry instead
+    if (endIndex > this.numberOfRecords) {
+      endIndex = this.numberOfRecords;
+    }
+
+    return array.slice(startIndex, endIndex);
+  }
+
   handleChangeOffset(offset) {
-    const currentStartIndex = ((this.props.page - 1) * (this.props.offset));
-    const newPage = Math.floor(currentStartIndex / offset) + 1;
+    const newPage = Math.floor(this.getCurrentPageFirstIndex() / offset) + 1;
     
     this.props.onChangeOffset(offset);
     this.handleGoToPage(newPage);

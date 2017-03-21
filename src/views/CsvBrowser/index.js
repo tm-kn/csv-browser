@@ -14,7 +14,7 @@ export default class CsvBrowser extends Component {
    * of rows is different.
    */
   get numberOfColumns() {
-    const entries = this.getEntriesForPage(this.state.page);
+    const entries = this.state.currentPageEntries;
 
     return entries.length ? entries[0].length : 0;
   }
@@ -31,6 +31,7 @@ export default class CsvBrowser extends Component {
     super();
 
     this.state = {
+      currentPageEntries: [],
       file: undefined,
       loading: false,
       error: undefined,
@@ -42,7 +43,7 @@ export default class CsvBrowser extends Component {
       sortBy: {},
       groupBy: undefined
     };
-
+    
     this.handleSearch = this.handleSearch.bind(this);
     this.handeGroupByColumn = this.handleGroupByColumn.bind(this);
     this.handleSortByColumn = this.handleSortByColumn.bind(this);
@@ -75,6 +76,12 @@ export default class CsvBrowser extends Component {
     if (this.state.groupBy !== undefined && this.state.groupBy !== prevState.groupBy) {
       this.groupArray();
     }
+
+    // We need to wait for ref to be assigned, so needs timeout
+    // TODO: Needs refactoring, antipattern
+    setTimeout(() => {
+      this.loadCurrentPageEntries()
+    }, 100);
   }
 
   /**
@@ -108,25 +115,18 @@ export default class CsvBrowser extends Component {
   }
 
   /**
-   * Get log entries for the particular page
-   * @param {number} pageNumber Page that we want entries for 
+   * Load log entries for the currentPage
    */
-  getEntriesForPage(pageNumber) {
-    let startIndex = ((pageNumber - 1) * (this.state.offset));
-    let endIndex = startIndex + this.state.offset;
-
-    if (startIndex !== 0) {
-      startIndex += 1;
+  loadCurrentPageEntries() {
+    if (this.pager === null) {
+      return;
     }
+    
+    const entries = this.pager.getPageEntriesFromArray(this.state.processedLogEntries);
 
-    // If supposde index is greater than the last entry in the array,
-    // use the last entry instead
-    if (endIndex > this.numberOfRecords) {
-      endIndex = this.numberOfRecords;
-    }
-
-    const result = this.state.processedLogEntries.slice(startIndex, endIndex);
-    return result;
+    this.setState({
+      currentPageEntries: entries
+    });
   }
 
   render() {
