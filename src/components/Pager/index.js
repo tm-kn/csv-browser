@@ -8,16 +8,17 @@ export default class Pager extends Component {
   };
 
   static propTypes = {
-    numberOfRecords: PropTypes.number.isRequired,
+    array: PropTypes.array.isRequired,
     offset: PropTypes.number.isRequired,
     offsetValues: PropTypes.arrayOf(PropTypes.number),
+    onChangeArray: PropTypes.func.isRequired,
     onChangePage: PropTypes.func.isRequired,
     onChangeOffset: PropTypes.func.isRequired,
     page: PropTypes.number.isRequired
   };
 
   get numberOfPages() {
-    const numberOfPages = Math.ceil(this.props.numberOfRecords / this.props.offset);
+    const numberOfPages = Math.ceil(this.props.array.length / this.props.offset);
 
     return numberOfPages || 1;
   }
@@ -38,6 +39,10 @@ export default class Pager extends Component {
     this.nextPageExists = this.nextPageExists.bind(this);
   }
 
+  componentDidMount() {
+    this.props.onChangeArray(this.getPageEntries());
+  }
+
   render() {
     return template.call(this);
   }
@@ -54,6 +59,7 @@ export default class Pager extends Component {
     }
 
     this.props.onChangePage(newPage);
+    this.props.onChangeArray(this.getPageEntriesForPage(newPage, this.props.offset));
   }
 
   handleNextPage() {
@@ -75,10 +81,18 @@ export default class Pager extends Component {
   getLastIndexForPage(page, offset) {
     return this.getFirstIndexForPage(page, offset) + offset;
   }
+  
+  getPageEntries() {
+    return this.getEntriesForPageFromArray(this.props.array, this.props.page, this.props.offset);
+  }
 
-  getPageEntriesFromArray(array) {
-    let startIndex = this.getCurrentPageFirstIndex();
-    let endIndex = this.getCurrentPageLastIndex();
+  getPageEntriesForPage(page, offset) {
+     return this.getEntriesForPageFromArray(this.props.array, page, offset);
+  }
+
+  getEntriesForPageFromArray(array, page, offset) {
+    let startIndex = this.getFirstIndexForPage(page, offset);
+    let endIndex = this.getLastIndexForPage(page, offset);
 
     if (startIndex !== 0) {
       startIndex += 1;
@@ -86,11 +100,11 @@ export default class Pager extends Component {
 
     // If supposde index is greater than the last entry in the array,
     // use the last entry instead
-    if (endIndex > this.numberOfRecords) {
-      endIndex = this.numberOfRecords;
+    if (endIndex > this.props.array.length) {
+      endIndex = this.props.array.length;
     }
 
-    return array.slice(startIndex, endIndex);
+    return this.props.array.slice(startIndex, endIndex);
   }
 
   handleChangeOffset(offset) {
@@ -98,6 +112,7 @@ export default class Pager extends Component {
     
     this.props.onChangeOffset(offset);
     this.handleGoToPage(newPage);
+    this.props.onChangeArray(this.getPageEntriesForPage(newPage, offset))
   }
 
   handlePreviousPage() {

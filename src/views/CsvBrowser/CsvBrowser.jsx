@@ -47,12 +47,12 @@ export default function() {
           </button>
         </div>
         <Pager
-          numberOfRecords={this.numberOfRecords}
+          array={this.state.processedLogEntries}
+          onChangeArray={array => this.setState(() => ({ currentPageEntries: array }))}
           onChangePage={page => this.setState(() => ({ page }))}
           onChangeOffset={offset => this.setState(() => ({ offset }))}
           offset={this.state.offset}
           page={this.state.page}
-          ref={pager => this.pager = pager}
         />
         <div>
           <button className="button" onClick={this.handleResetFilters}>Reset filter/sort</button>

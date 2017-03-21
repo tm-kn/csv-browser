@@ -76,12 +76,6 @@ export default class CsvBrowser extends Component {
     if (this.state.groupBy !== undefined && this.state.groupBy !== prevState.groupBy) {
       this.groupArray();
     }
-
-    // We need to wait for ref to be assigned, so needs timeout
-    // TODO: Needs refactoring, antipattern
-    setTimeout(() => {
-      this.loadCurrentPageEntries()
-    }, 100);
   }
 
   /**
@@ -112,21 +106,6 @@ export default class CsvBrowser extends Component {
     };
 
     loadAndParseCsvFile(this.state.file, onComplete, onError);
-  }
-
-  /**
-   * Load log entries for the currentPage
-   */
-  loadCurrentPageEntries() {
-    if (this.pager === null) {
-      return;
-    }
-    
-    const entries = this.pager.getPageEntriesFromArray(this.state.processedLogEntries);
-
-    this.setState({
-      currentPageEntries: entries
-    });
   }
 
   render() {
