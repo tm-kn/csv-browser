@@ -1,0 +1,16 @@
+exports[`test renders without crashing 1`] = `
+<form
+  onSubmit={[Function]}>
+  <input
+    name="search"
+    onChange={[Function]}
+    placeholder="Search..."
+    type="text"
+    value="" />
+  <input
+    className="button"
+    name="submitSearch"
+    type="submit"
+    value="Search" />
+</form>
+`;

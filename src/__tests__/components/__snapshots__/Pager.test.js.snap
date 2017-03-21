@@ -1,0 +1,97 @@
+exports[`test renders without crashing 1`] = `
+<div>
+  <button
+    className="button"
+    disabled={true}
+    onClick={[Function]}>
+    First page
+  </button>
+  <button
+    className="button"
+    disabled={true}
+    onClick={[Function]}>
+    Previous page
+  </button>
+  <span>
+    1
+     / 
+    1
+  </span>
+  <button
+    className="button"
+    disabled={true}
+    onClick={[Function]}>
+    Next page
+  </button>
+  <button
+    className="button"
+    disabled={true}
+    onClick={[Function]}>
+    Last page
+  </button>
+  <form
+    onSubmit={[Function]}>
+    <input
+      name="page"
+      onChange={[Function]}
+      placeholder="Page number..."
+      type="number"
+      value="" />
+    <input
+      className="button"
+      name="submitPageNumber"
+      type="submit"
+      value="Go" />
+  </form>
+  <div>
+    <p>
+      Records found: 
+      0
+    </p>
+    <ul
+      className="horizontal">
+      <li>
+        <span>
+          Display:
+        </span>
+      </li>
+      <li>
+        <button
+          className="button"
+          disabled={true}
+          onClick={[Function]}>
+          15
+           records
+        </button>
+      </li>
+      <li>
+        <button
+          className="button"
+          disabled={false}
+          onClick={[Function]}>
+          30
+           records
+        </button>
+      </li>
+      <li>
+        <button
+          className="button"
+          disabled={false}
+          onClick={[Function]}>
+          60
+           records
+        </button>
+      </li>
+      <li>
+        <button
+          className="button"
+          disabled={false}
+          onClick={[Function]}>
+          90
+           records
+        </button>
+      </li>
+    </ul>
+  </div>
+</div>
+`;

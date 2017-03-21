@@ -1,0 +1,23 @@
+exports[`test renders without crashing 1`] = `
+<div>
+  <h1>
+    Select file
+  </h1>
+  <p>
+    Select the file you want to open.
+  </p>
+  <form
+    onSubmit={[Function]}>
+    <input
+      accept={undefined}
+      name="csvFile"
+      onChange={[Function]}
+      type="file" />
+    <input
+      className="button"
+      disabled={true}
+      type="submit"
+      value="Load to the browser" />
+  </form>
+</div>
+`;
