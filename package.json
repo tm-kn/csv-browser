@@ -9,7 +9,9 @@
     "crypto-js": "^3.1.9-1",
     "jsdoc": "^3.4.3",
     "react": "^15.4.2",
-    "react-dom": "^15.4.2"
+    "react-dom": "^15.4.2",
+    "react-test-renderer": "^15.4.2",
+    "underscore": "^1.8.3"
   },
   "devDependencies": {
     "autoprefixer": "6.7.2",
@@ -86,16 +88,20 @@
       "react-app"
     ],
     "plugins": [
-      ["module-resolver", {
-        "root": [
-          "./src"
+      [
+        "module-resolver",
+        {
+          "root": [
+            "./src"
           ],
-        "alias": {
-          "components": "./src/components",
-          "utils": "./src/utils",
-          "views": "./src/views"
+          "alias": {
+            "components": "./src/components",
+            "utils": "./src/utils",
+            "views": "./src/views",
+            "tests": "./src/__tests__"
+          }
         }
-      }]
+      ]
     ]
   },
   "eslintConfig": {
