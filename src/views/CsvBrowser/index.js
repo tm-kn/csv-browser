@@ -41,7 +41,7 @@ export default class CsvBrowser extends Component {
       logEntries: [],
       offset: Pager.defaultProps.offsetValues[0],
       page: 1,
-      search: '',
+      search: undefined,
       processedLogEntries: [],
       sortBy: {},
       groupBy: undefined
@@ -161,7 +161,7 @@ export default class CsvBrowser extends Component {
         loading: false,
         processedLogEntries: state.logEntries,
         sortBy: {},
-        search: '',
+        search: undefined,
         page: 1
       }));
     }, 100);
@@ -176,7 +176,7 @@ export default class CsvBrowser extends Component {
     if (this.state.isLoading) {
       return;
     }
-    
+
     this.setState({
       loading: true
     });
