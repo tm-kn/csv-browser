@@ -120,6 +120,10 @@ export default class CsvBrowser extends Component {
    * @param {number} columnId Column index array will be sorted by
    */
   handleSortByColumn(columnId) {
+    if (this.state.isLoading) {
+      return;
+    }
+
     this.setState(() => ({
       loading: true
     }));
@@ -142,6 +146,10 @@ export default class CsvBrowser extends Component {
    * and bringing the original array to the view.
    */
   handleResetFilters() {
+    if (this.state.isLoading) {
+      return;
+    }
+
     this.setState(() => ({
       loading: true
     }));
@@ -165,6 +173,10 @@ export default class CsvBrowser extends Component {
    * @param {string} searchString String that will be used to search array with
    */
   handleSearch(searchString) {
+    if (this.state.isLoading) {
+      return;
+    }
+    
     this.setState({
       loading: true
     });
