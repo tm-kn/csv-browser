@@ -24,3 +24,9 @@ To build a production package that is served from a server.
 ```bash
 yarn run build # npm run build
 ```
+
+To run tests.
+
+```bash
+yarn test # npm test
+```

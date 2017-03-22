@@ -15,17 +15,17 @@ exports[`test renders without crashing 1`] = `
   <span>
     1
      / 
-    1
+    7
   </span>
   <button
     className="button"
-    disabled={true}
+    disabled={false}
     onClick={[Function]}>
     Next page
   </button>
   <button
     className="button"
-    disabled={true}
+    disabled={false}
     onClick={[Function]}>
     Last page
   </button>
@@ -46,7 +46,7 @@ exports[`test renders without crashing 1`] = `
   <div>
     <p>
       Records found: 
-      0
+      100
     </p>
     <ul
       className="horizontal">

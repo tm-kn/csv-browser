@@ -17,7 +17,7 @@ export function getFileHashes(file, onComplete, onError) {
     onError(err);
   };
 
-  reader.onload = (result) => {
+  reader.onload = event => {
     const data = event.target.result;
     const wordArray = CryptoJS.lib.WordArray.create(data);
 
