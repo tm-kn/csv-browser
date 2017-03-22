@@ -1,10 +1,13 @@
 import { Component } from 'react';
 
 import { Pager } from 'components';
-import { CSVArrayController } from 'utils';
 import { loadAndParseCsvFile } from 'utils/file';
 
 import template from './CsvBrowser.jsx';
+
+const GroupByWorker = require('workers/groupBy.js');
+const SortByWorker = require('workers/sortBy.js');
+const SearchWorker = require('workers/searchAllColumnsByString.js');
 
 export default class CsvBrowser extends Component {
   /**
@@ -196,52 +199,72 @@ export default class CsvBrowser extends Component {
    * Group the array operation.
    */
   groupArray() {
-    const arrayUtility = new CSVArrayController(this.state.processedLogEntries);
-    const groupedArray = arrayUtility.groupByColumn(this.state.groupBy);
+    const worker = new GroupByWorker();
+    
+    worker.onmessage = event => {
+      const groupedArray = event.data;
 
-    this.setState(() => ({
-      processedLogEntries: groupedArray,
-      page: 1
-    }));
+      worker.terminate();
 
-    this.setState({
-      loading: false
-    });
+      this.setState(() => ({
+        processedLogEntries: groupedArray,
+        page: 1
+      }));
+
+      this.setState({
+        loading: false
+      });
+    };
+
+    worker.postMessage([this.state.processedLogEntries, this.state.groupBy]);
   }
   
   /**
    * Sort the array operation.
    */
   sortArray() {
-    const arrayUtility = new CSVArrayController(this.state.processedLogEntries);
-    const sortedArray = arrayUtility.sortByColumn(
+    const worker = new SortByWorker();
+
+    worker.onmessage = event => {
+      const sortedArray = event.data;
+
+      worker.terminate();
+
+      this.setState(state => ({
+        processedLogEntries: sortedArray
+      }));
+
+      this.setState(() => ({
+        loading: false
+      }));
+    };
+
+    worker.postMessage([
+      this.state.processedLogEntries,
       this.state.sortBy.columnId,
       this.state.sortBy.ascending
-    );
-
-    this.setState(state => ({
-      processedLogEntries: sortedArray
-    }));
-
-    this.setState(() => ({
-      loading: false
-    }));
+    ])
   }
 
   /**
    * Serach the array operation.
    */
   searchArray() {
-    const arrayUtility = new CSVArrayController(this.state.processedLogEntries);
-    const searchedArray = arrayUtility.searchAllColumnsByString(this.state.search);
+    const worker = new SearchWorker();
+    
+    worker.onmessage = event => {
+      const searchedArray = event.data;
+      worker.terminate();
 
+      this.setState(state => ({
+        processedLogEntries: searchedArray
+      }));
 
-    this.setState(state => ({
-      processedLogEntries: searchedArray
-    }));
+      this.setState({
+        loading: false
+      });
+    };
 
-    this.setState({
-      loading: false
-    });
+    worker.postMessage([this.state.processedLogEntries, this.state.search])
   }
 }

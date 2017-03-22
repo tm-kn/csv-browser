@@ -12,7 +12,8 @@
     "react-addons-test-utils": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-test-renderer": "^15.4.2",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "worker-loader": "^0.8.0"
   },
   "devDependencies": {
     "autoprefixer": "6.7.2",
@@ -99,7 +100,8 @@
             "components": "./src/components",
             "utils": "./src/utils",
             "views": "./src/views",
-            "tests": "./__tests__"
+            "tests": "./__tests__",
+            "workers": "./src/workers"
           }
         }
       ]
