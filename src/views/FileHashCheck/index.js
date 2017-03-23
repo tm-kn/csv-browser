@@ -1,9 +1,9 @@
 import { Component } from 'react';
 
-import { getFileHashes } from 'utils/file';
-
 import './FileHashCheck.css';
 import template from './FileHashCheck.jsx';
+
+const FileHashesWorker = require('workers/getFileHashes');
 
 export default class FileHashCheck extends Component {
   constructor() {
@@ -40,21 +40,27 @@ export default class FileHashCheck extends Component {
       loading: true
     }));
 
-    const handleComplete = (fileHash) => {
-      this.setState(() => ({
-        fileHash,
-        loading: false
-      }));
+    const worker = new FileHashesWorker();
+    
+    worker.onmessage = event => {
+      const eventData = event.data;
+      const status = eventData[0];
+      const data = eventData[1];
+
+      if (status === 'ok') {
+        this.setState(() => ({
+          fileHash: data,
+          loading: false
+        }));
+      } else {
+        this.setState(() => ({
+          error: data,
+          loading: false
+        }));
+      }
     };
 
-    const handleError = (error) => {
-      this.setState(() => ({
-        error,
-        loading: false
-      }));
-    };
-
-    getFileHashes(this.state.file, handleComplete, handleError);
+    worker.postMessage(this.state.file);
   }
 
   /**
