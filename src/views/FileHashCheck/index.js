@@ -44,6 +44,7 @@ export default class FileHashCheck extends Component {
     
     worker.onmessage = event => {
       const eventData = event.data;
+      worker.terminate();
       const status = eventData[0];
       const data = eventData[1];
 

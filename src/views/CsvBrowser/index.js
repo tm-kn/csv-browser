@@ -1,10 +1,10 @@
 import { Component } from 'react';
 
 import { Pager } from 'components';
-import { loadAndParseCsvFile } from 'utils/file';
 
 import template from './CsvBrowser.jsx';
 
+const CSVParserWorker = require('workers/loadAndParseCsvFile.js');
 const GroupByWorker = require('workers/groupBy.js');
 const SortByWorker = require('workers/sortBy.js');
 const SearchWorker = require('workers/searchAllColumnsByString.js');
@@ -93,22 +93,30 @@ export default class CsvBrowser extends Component {
       sortBy: {}
     }));
 
-    const onComplete = (data) => {
-      this.setState(state => ({
-        loading: false,
-        logEntries: data,
-        processedLogEntries: data
-      }));
+    const worker = new CSVParserWorker();
+
+    worker.onmessage = event => {
+      const eventData = event.data;
+      worker.terminate();
+
+      const status = eventData[0];
+      const data = eventData[1];
+
+      if (status === 'ok') {
+        this.setState(state => ({
+          loading: false,
+          logEntries: data,
+          processedLogEntries: data
+        }));
+      } else {
+        this.setState(() => ({
+          error: data,
+          loading: false
+        }));
+      }
     };
 
-    const onError = (err) => {
-      this.setState(() => ({
-        error: JSON.stringify(err),
-        loading: false
-      }));
-    };
-
-    loadAndParseCsvFile(this.state.file, onComplete, onError);
+    worker.postMessage(this.state.file);
   }
 
   render() {
